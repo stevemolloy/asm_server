@@ -13,7 +13,7 @@ int main(void) {
     struct sockaddr_in addr = { .sin_family = AF_INET, .sin_port = htons(PORT), .sin_addr = {0} };
 
     printf("INFO: Creating socket...\n");
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if (sock < 0) {
         printf("ERROR: Could not create socket\n");
         return 1;
@@ -21,6 +21,10 @@ int main(void) {
     printf("INFO: Socket created with file descriptor %d\n", sock);
 
     printf("INFO: Binding to port %d...\n", PORT);
+    printf("sizeof(addr) = %zu\n", sizeof(addr));
+    printf("sizeof(addr.sin_family) = %zu\n", sizeof(addr.sin_family));
+    printf("sizeof(addr.sin_port) = %zu\n", sizeof(addr.sin_port));
+    printf("sizeof(addr.sin_addr) = %zu\n", sizeof(addr.sin_addr));
     if (bind(sock, (const struct sockaddr*)&addr, sizeof(addr))< 0) {
         printf("ERROR: Could not bind socket\n");
         return 1;
@@ -41,9 +45,9 @@ int main(void) {
         printf("INFO: Awaiting connections...\n");
         int client_fd = accept(sock, &remote_addr, &remote_addr_len);
 
-        char read_buffer[BUFF_LEN] = {0};
-        int read_bytes = read(client_fd, read_buffer, BUFF_LEN-1);
-        printf("Received %d bytes:\n%s\n", read_bytes, read_buffer);
+        // char read_buffer[BUFF_LEN] = {0};
+        // int read_bytes = read(client_fd, read_buffer, BUFF_LEN-1);
+        // printf("Received %d bytes:\n%s\n", read_bytes, read_buffer);
 
         const char *resp = HTTP_HDR"<html><h1>Hello world</h1></html>";
         send(client_fd, resp, strlen(resp), 0);

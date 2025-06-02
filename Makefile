@@ -12,7 +12,13 @@ OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 BINDIR = bin
 BIN = $(BINDIR)/server
 
-all: $(BIN)
+all: $(BIN) $(BINDIR)/asm_server
+
+$(BINDIR)/asm_server: $(OBJ)/asm_server.o
+	ld -g -o $(BINDIR)/asm_server $(OBJ)/asm_server.o
+
+$(OBJ)/asm_server.o: $(SRC)/server.asm
+	nasm -g -f elf64 -o $(OBJ)/asm_server.o $(SRC)/server.asm
 
 $(BIN): $(OBJS)
 	@mkdir -p $(@D)
