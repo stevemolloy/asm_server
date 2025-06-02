@@ -29,8 +29,44 @@ _start:
     jl .exit_fail
     mov [client_fd], rax
 
-    WRITE [client_fd], hello, hello_len
+    READ [client_fd], buffer, 2047
+    cmp byte [buffer+5], 102    ; f
+    je .close
+    WRITE STDOUT, buffer, 2047
 
+.open_file:
+    WRITE STDOUT, open_index_msg, open_index_msg_len
+    OPEN index_html_fname, O_RDONLY, 0
+    cmp rax, 0
+    jg .fstat_file
+    jmp .exit_fail
+
+.fstat_file:
+    mov r13, rax
+    WRITE STDOUT, fstat_msg, fstat_msg_len
+    FSTAT r13, stat_struct
+    mov r12, [stat_struct + ST_SIZE_OFFS]
+
+    WRITE STDOUT, mmap_msg, mmap_msg_len
+    MMAP 0, r12, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0
+    cmp rax, 0
+    jg .read_file
+    jmp .exit_fail
+
+.read_file:
+    mov [contents], rax
+    WRITE STDOUT, read_index_msg, read_index_msg_len
+    READ r13, [contents], r12
+
+    WRITE STDOUT, write_to_client_msg, write_to_client_msg_len
+    WRITE [client_fd], header, header_len
+    WRITE [client_fd], [contents], r12
+
+    WRITE STDOUT, munmap_msg, munmap_msg_len
+    MUNMAP [contents], r12
+
+.close:
+    WRITE STDOUT, closing_cnxion_msg, closing_cnxion_msg_len
     CLOSE [client_fd]
 
     jmp .server_loop
@@ -40,15 +76,10 @@ _start:
     EXIT EXIT_FAILURE
 
 section .data
-    hello db "HTTP/1.1 200 OK", 13, 10
-          db "Content-Type: text/html", 13, 10, 13, 10
-          db "<!DOCTYPE html>", 10
-          db "<html>", 10
-          db "    <h1>Hello world from ASM</h1>", 10
-          db "    <button type=", 34, "button", 34, " onclick=", 34, "document.getElementById(", 39, "demo", 39, ")", 34, ">Click me!</button>", 10
-          db "    <p id=", 34, "demo", 34, "></p>", 10
-          db "</html>"
-    hello_len equ $ - hello
+    header db "HTTP/1.1 200 OK", 13, 10
+           db "Content-Type: text/html", 13, 10, 13, 10
+    header_len equ $ - header
+    index_html_fname db "src/index.html", 0
 
     socket_msg db "INFO: Creating socket...", 10
     socket_msg_len equ $ - socket_msg
@@ -62,6 +93,27 @@ section .data
     accept_msg db "INFO: Awaiting connections...", 10
     accept_msg_len equ $ - accept_msg
 
+    open_index_msg db "INFO: Opening index.html...", 10
+    open_index_msg_len equ $ - open_index_msg
+
+    fstat_msg db "INFO: Fstating index.html...", 10
+    fstat_msg_len equ $ - fstat_msg
+
+    mmap_msg db "INFO: Mapping memory for the file...", 10
+    mmap_msg_len equ $ - mmap_msg
+
+    read_index_msg db "INFO: Reading index.html...", 10
+    read_index_msg_len equ $ - read_index_msg
+
+    write_to_client_msg db "INFO: Sending data to client...", 10
+    write_to_client_msg_len equ $ - write_to_client_msg
+
+    munmap_msg db "INFO: Unmapping the memory...", 10
+    munmap_msg_len equ $ - munmap_msg
+
+    closing_cnxion_msg db "INFO: Closing the connection to the client...", 10
+    closing_cnxion_msg_len equ $ - closing_cnxion_msg
+
     err_msg db "ERROR", 10
     err_msg_len equ $ - err_msg
 
@@ -72,6 +124,9 @@ section .data
     addr_len equ $ - addr.sin_family
 
 section .bss
+    contents: resq 1
     sock: resd 1
     client_fd: resd 1
+    stat_struct: resb 144
+    buffer: resb 2048
 
