@@ -6,35 +6,41 @@ global _start
 
 section .text
 _start:
+    ; Create the socket
     WRITE STDOUT, socket_msg, socket_msg_len
     SOCKET AF_INET, SOCK_STREAM, 0
     cmp rax, 0
     jl .exit_fail
     mov [sock], rax
 
+    ; Bind it to port 8080
     WRITE STDOUT, bind_msg, bind_msg_len
     BIND [sock], addr.sin_family, addr_len
     cmp rax, 0
     jne .exit_fail
 
+    ; Start listening for incoming connections
     WRITE STDOUT, listen_msg, listen_msg_len
     LISTEN [sock], BACKLOG
     cmp rax, 0
     jne .exit_fail
 
 .server_loop:
+    ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
     ACCEPT [sock], 0, 0
     cmp rax, 0
     jl .exit_fail
     mov [client_fd], rax
 
+    ; Read the request. Close if the request is for the favicon
     READ [client_fd], buffer, 2047
     cmp byte [buffer+5], 102    ; f
     je .close
     WRITE STDOUT, buffer, 2047
 
 .open_file:
+    ; Open the local index.html
     WRITE STDOUT, open_index_msg, open_index_msg_len
     OPEN index_html_fname, O_RDONLY, 0
     cmp rax, 0
@@ -42,11 +48,13 @@ _start:
     jmp .exit_fail
 
 .fstat_file:
+    ; Figure out how much mem we need to read the file
     mov r13, rax
     WRITE STDOUT, fstat_msg, fstat_msg_len
     FSTAT r13, stat_struct
     mov r12, [stat_struct + ST_SIZE_OFFS]
 
+    ; Alloc that memory
     WRITE STDOUT, mmap_msg, mmap_msg_len
     MMAP 0, r12, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0
     cmp rax, 0
@@ -54,21 +62,26 @@ _start:
     jmp .exit_fail
 
 .read_file:
+    ; Read the file into the memory
     mov [contents], rax
     WRITE STDOUT, read_index_msg, read_index_msg_len
     READ r13, [contents], r12
 
+    ; Write the http header and then the index.html to the client
     WRITE STDOUT, write_to_client_msg, write_to_client_msg_len
     WRITE [client_fd], header, header_len
     WRITE [client_fd], [contents], r12
 
+    ; Free the memory alloced for the file
     WRITE STDOUT, munmap_msg, munmap_msg_len
     MUNMAP [contents], r12
 
 .close:
+    ; Close the connection
     WRITE STDOUT, closing_cnxion_msg, closing_cnxion_msg_len
     CLOSE [client_fd]
 
+    ; Loop back to the start to prep for the next client
     jmp .server_loop
 
 .exit_fail:
