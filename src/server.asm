@@ -40,7 +40,14 @@ _start:
     EXIT EXIT_FAILURE
 
 section .data
-    hello db "HTTP/1.1 200 OK", 13, 10, "Content-Type: text/html", 13, 10, 13, 10, "<html><h1>Hello world from ASM</h1><p>Testing</p></html>"
+    hello db "HTTP/1.1 200 OK", 13, 10
+          db "Content-Type: text/html", 13, 10, 13, 10
+          db "<!DOCTYPE html>", 10
+          db "<html>", 10
+          db "    <h1>Hello world from ASM</h1>", 10
+          db "    <button type=", 34, "button", 34, " onclick=", 34, "document.getElementById(", 39, "demo", 39, ")", 34, ">Click me!</button>", 10
+          db "    <p id=", 34, "demo", 34, "></p>", 10
+          db "</html>"
     hello_len equ $ - hello
 
     socket_msg db "INFO: Creating socket...", 10
@@ -59,7 +66,7 @@ section .data
     err_msg_len equ $ - err_msg
 
     addr.sin_family dw AF_INET
-    addr.sin_port dw 36895
+    addr.sin_port dw 36895    ; htons(8080)
     addr.sin_addr dd 0
     addr.sin_zero dq 0
     addr_len equ $ - addr.sin_family
