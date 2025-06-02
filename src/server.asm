@@ -39,17 +39,6 @@ _start:
     WRITE STDERR, err_msg, err_msg_len
     EXIT EXIT_FAILURE
 
-strlen:
-    xor rax, rax
-.loop:
-    cmp byte [rdi], 0
-    je .done
-    inc rax
-    inc rdi
-    jmp .loop
-.done:
-    ret
-    
 section .data
     hello db "HTTP/1.1 200 OK", 13, 10, "Content-Type: text/html", 13, 10, 13, 10, "<html><h1>Hello world from ASM</h1><p>Testing</p></html>"
     hello_len equ $ - hello
