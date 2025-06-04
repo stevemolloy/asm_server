@@ -1,7 +1,6 @@
 %include "src/linux.inc"
 
-%define BACKLOG 16
-%define BUFF_LEN 2048
+%include "src/server.inc"
 
 global _start
 
@@ -28,11 +27,7 @@ _start:
 
 .server_loop:
     ; Zero the logging buffer
-    mov rdi, buffer
-    mov rcx, BUFF_LEN
-    xor rax, rax
-    rep stosb    ; stosb stores the value of RAX to the location pointed to by RDI and increments RDI
-                 ; rep repeats this while RCX!=0, decrementing RCX each time
+    ZERO_MEM buffer, BUFF_LEN
 
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
