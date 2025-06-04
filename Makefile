@@ -34,6 +34,9 @@ clean:
 $(OBJ):
 	@mkdir -p $@
 
-run: $(BIN)
-	$(BIN)
+# run: $(BIN)
+# 	$(BIN)
+
+run: $(BINDIR)/asm_server
+	./$(BINDIR)/asm_server
 
