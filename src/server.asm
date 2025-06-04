@@ -31,7 +31,8 @@ _start:
     mov rdi, buffer
     mov rcx, BUFF_LEN
     xor rax, rax
-    rep stosb
+    rep stosb    ; stosb stores the value of RAX to the location pointed to by RDI and increments RDI
+                 ; rep repeats this while RCX!=0, decrementing RCX each time
 
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
