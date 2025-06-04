@@ -41,10 +41,24 @@ _start:
     mov [client_fd], rax
 
     ; Read the request. Close if the request is for the favicon
+    WRITE STDOUT, req_recvd_msg, req_recvd_msg_len
     READ [client_fd], buffer, 2047
-    cmp byte [buffer+5], 102    ; f
-    je .close
     WRITE STDOUT, buffer, 2047
+    mov rdi, buffer+4
+    mov rsi, root_req
+    mov rdx, root_req_len
+    call sized_strcmp
+    cmp rax, 0
+    je .open_file
+
+    mov rdi, buffer+4
+    mov rsi, indexhtml_req
+    mov rdx, indexhtml_req_len
+    call sized_strcmp
+    cmp rax, 0
+    je .open_file
+
+    jmp .send_404
 
 .open_file:
     ; Open the local index.html
@@ -76,12 +90,17 @@ _start:
 
     ; Write the http header and then the index.html to the client
     WRITE STDOUT, write_to_client_msg, write_to_client_msg_len
-    WRITE [client_fd], header, header_len
+    WRITE [client_fd], header200, header200_len
     WRITE [client_fd], [contents], r12
 
     ; Free the memory alloced for the file
     WRITE STDOUT, munmap_msg, munmap_msg_len
     MUNMAP [contents], r12
+    jmp .close
+
+.send_404:
+    WRITE STDOUT, log_404_msg, log_404_msg_len
+    WRITE [client_fd], header404, header404_len
 
 .close:
     ; Close the connection
@@ -95,10 +114,35 @@ _start:
     WRITE STDERR, err_msg, err_msg_len
     EXIT EXIT_FAILURE
 
+sized_strcmp:
+    ; rdi: String 1
+    ; rsi: String 2
+    ; rdx: N
+.loop:
+    mov r12, [rdi]
+    mov r13, [rsi]
+    cmp r12b, r13b
+    jne .fail
+    dec rdx
+    jz .success
+    inc rdi
+    inc rsi
+    jmp .loop
+.success:
+    xor rax, rax
+    ret
+.fail:
+    mov rax, -1
+    ret
+
 section .data
-    header db "HTTP/1.1 200 OK", 13, 10
+    header200 db "HTTP/1.1 200 OK", 13, 10
            db "Content-Type: text/html", 13, 10, 13, 10
-    header_len equ $ - header
+    header200_len equ $ - header200
+
+    header404 db "HTTP/1.1 404 Not Found", 13, 10
+    header404_len equ $ - header404
+
     index_html_fname db "src/index.html", 0
 
     socket_msg db "INFO: Creating socket...", 10
@@ -112,6 +156,9 @@ section .data
 
     accept_msg db "INFO: Awaiting connections...", 10
     accept_msg_len equ $ - accept_msg
+
+    req_recvd_msg db "INFO: Received the following request:", 10, 10
+    req_recvd_msg_len equ $ - req_recvd_msg
 
     open_index_msg db "INFO: Opening index.html...", 10
     open_index_msg_len equ $ - open_index_msg
@@ -134,6 +181,9 @@ section .data
     closing_cnxion_msg db "INFO: Closing the connection to the client...", 10
     closing_cnxion_msg_len equ $ - closing_cnxion_msg
 
+    log_404_msg db "INFO: Sending 404...", 10
+    log_404_msg_len equ $ - log_404_msg
+
     err_msg db "ERROR", 10
     err_msg_len equ $ - err_msg
 
@@ -142,6 +192,15 @@ section .data
     addr.sin_addr dd 0
     addr.sin_zero dq 0
     addr_len equ $ - addr.sin_family
+
+    root_req db "/ "
+    root_req_len equ $ - root_req
+
+    indexhtml_req db "/index.html"
+    indexhtml_req_len equ $ - indexhtml_req
+
+    favicon db "/favicon.ico"
+    favicon_len equ $ - favicon
 
 section .bss
     contents: resq 1
