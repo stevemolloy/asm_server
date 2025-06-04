@@ -45,14 +45,22 @@ _start:
     WRITE STDOUT, req_recvd_msg, req_recvd_msg_len
     READ [client_fd], buffer, 2047
     WRITE STDOUT, buffer, 2047
-    mov rdi, buffer+4
+
+    mov rdi, buffer
+    mov rsi, get_req
+    mov rdx, get_req_len
+    call sized_strcmp
+    cmp rax, 0
+    jne .send_404
+
+    mov rdi, buffer + get_req_len
     mov rsi, root_req
     mov rdx, root_req_len
     call sized_strcmp
     cmp rax, 0
     je .open_file
 
-    mov rdi, buffer+4
+    mov rdi, buffer + get_req_len
     mov rsi, indexhtml_req
     mov rdx, indexhtml_req_len
     call sized_strcmp
@@ -194,10 +202,13 @@ section .data
     addr.sin_zero dq 0
     addr_len equ $ - addr.sin_family
 
-    root_req db "/ "
+    get_req db "GET /"
+    get_req_len equ $ - get_req
+
+    root_req db " "
     root_req_len equ $ - root_req
 
-    indexhtml_req db "/index.html"
+    indexhtml_req db "index.html"
     indexhtml_req_len equ $ - indexhtml_req
 
     favicon db "/favicon.ico"
