@@ -1,6 +1,7 @@
 %include "src/linux.inc"
 
 %define BACKLOG 16
+%define BUFF_LEN 2048
 
 global _start
 
@@ -26,6 +27,12 @@ _start:
     jne .exit_fail
 
 .server_loop:
+    ; Zero the logging buffer
+    mov rdi, buffer
+    mov rcx, BUFF_LEN
+    xor rax, rax
+    rep stosb
+
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
     ACCEPT [sock], 0, 0
@@ -141,5 +148,5 @@ section .bss
     sock: resd 1
     client_fd: resd 1
     stat_struct: resb 144
-    buffer: resb 2048
+    buffer: resb BUFF_LEN
 
