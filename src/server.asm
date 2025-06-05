@@ -67,37 +67,26 @@ _start:
 .copy_filename:
     mov rsi, rbx
     lea rdi, [filename]
+    mov rsi, html_folder
+    mov rcx, html_folder_len
+    rep movsb
+
+    mov rsi, [cursor]
+    lea rdi, [filename + html_folder_len]
     mov rcx, rax
     rep movsb
     mov byte [rdi], 0
-
-.checking_file:
-    mov rdi, [cursor]
-    mov rsi, root_req
-    mov rdx, root_req_len
-    call sized_strcmp
-    cmp rax, 0
-    je .open_file
-
-    ; Serve index.html if the request is for "/index.html"
-    mov rdi, [cursor]
-    mov rsi, indexhtml_req
-    mov rdx, indexhtml_req_len
-    call sized_strcmp
-    cmp rax, 0
-    je .open_file
-
-    ; Otherwise, 404
-    jmp .send_404
 
 .open_file:
     ; Open the local index.html
 %ifdef DEBUG
     WRITE STDOUT, open_index_msg, open_index_msg_len
 %endif
-    OPEN index_html_fname, O_RDONLY, 0
+    ; OPEN index_html_fname, O_RDONLY, 0
+    OPEN filename, O_RDONLY, 0
     cmp rax, 0
     jg .fstat_file
+
     jmp .send_404
 
 .fstat_file:
@@ -244,6 +233,9 @@ section .data
 
     favicon db "/favicon.ico"
     favicon_len equ $ - favicon
+
+    html_folder db "html/", 0
+    html_folder_len equ $ - html_folder - 1
 
 section .bss
     cursor: resq 1
