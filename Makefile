@@ -17,22 +17,8 @@ $(OBJS): $(SRCS)
 	@mkdir -p $(OBJ)
 	nasm -g -f elf64 -o $@ $^
 
-# $(BIN): $(OBJS)
-# 	@mkdir -p $(@D)
-# 	$(CC) $(CFLAGS) $^ -o $@ $(CLIBS)
-
-# $(OBJ)/%.o: $(SRC)/%.c
-# 	@mkdir -p $(@D)
-# 	$(CC) $(CFLAGS) $(CINCLUDES) -c $< -o $@
-
-# clean:
-# 	rm -rf $(BINDIR) $(OBJ)
-
 $(OBJ):
 	@mkdir -p $@
-
-# run: $(BIN)
-# 	$(BIN)
 
 run: $(BINDIR)/asm_server
 	./$(BINDIR)/asm_server
