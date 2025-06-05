@@ -1,3 +1,8 @@
+AS = nasm
+ASMFLAGS = -g -f elf64
+LD = ld
+LINKFLAGS = -g
+
 SRC = src
 OBJ = objs
 
@@ -11,15 +16,15 @@ all: $(BIN)
 
 $(BIN): $(OBJS)
 	@mkdir -p $(BINDIR)
-	ld -g -o $@ $^
+	$(LD) $(LINKFLAGS) -o $@ $^
 
 $(OBJS): $(SRCS)
 	@mkdir -p $(OBJ)
-	nasm -g -f elf64 -o $@ $^
+	$(AS) $(ASMFLAGS) -o $@ $^
 
 $(OBJ):
 	@mkdir -p $@
 
-run: $(BINDIR)/asm_server
-	./$(BINDIR)/asm_server
+run: $(BIN)
+	./$(BIN)
 
