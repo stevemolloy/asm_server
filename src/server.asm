@@ -1,6 +1,7 @@
 %include "src/linux.inc"
-
 %include "src/server.inc"
+
+; %define DEBUG
 
 global _start
 
@@ -26,8 +27,7 @@ _start:
     jne .exit_fail
 
 .server_loop:
-    ; Zero the logging buffer
-    ZERO_MEM buffer, BUFF_LEN
+    ZERO_MEM buffer, BUFF_LEN ; Zero the logging buffer
 
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
@@ -38,9 +38,10 @@ _start:
 
     ; Read the request. Close if the request is for the favicon
     WRITE STDOUT, req_recvd_msg, req_recvd_msg_len
-    READ [client_fd], buffer, 2047
-    WRITE STDOUT, buffer, 2047
+    READ [client_fd], buffer, BUFF_LEN - 1
+    WRITE STDOUT, buffer, BUFF_LEN - 1
 
+    ; Check if this is a GET req. 404 if not.
     mov rdi, buffer
     mov rsi, get_req
     mov rdx, get_req_len
@@ -48,6 +49,7 @@ _start:
     cmp rax, 0
     jne .send_404
 
+    ; Serve index.html if the request is for "/"
     mov rdi, buffer + get_req_len
     mov rsi, root_req
     mov rdx, root_req_len
@@ -55,6 +57,7 @@ _start:
     cmp rax, 0
     je .open_file
 
+    ; Serve index.html if the request is for "/index.html"
     mov rdi, buffer + get_req_len
     mov rsi, indexhtml_req
     mov rdx, indexhtml_req_len
@@ -62,25 +65,32 @@ _start:
     cmp rax, 0
     je .open_file
 
+    ; Otherwise, 404
     jmp .send_404
 
 .open_file:
     ; Open the local index.html
+%ifdef DEBUG
     WRITE STDOUT, open_index_msg, open_index_msg_len
+%endif
     OPEN index_html_fname, O_RDONLY, 0
     cmp rax, 0
     jg .fstat_file
-    jmp .exit_fail
+    jmp .send_404
 
 .fstat_file:
     ; Figure out how much mem we need to read the file
     mov r13, rax
+%ifdef DEBUG
     WRITE STDOUT, fstat_msg, fstat_msg_len
+%endif
     FSTAT r13, stat_struct
     mov r12, [stat_struct + ST_SIZE_OFFS]
 
     ; Alloc that memory
+%ifdef DEBUG
     WRITE STDOUT, mmap_msg, mmap_msg_len
+%endif
     MMAP 0, r12, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0
     cmp rax, 0
     jg .read_file
@@ -89,7 +99,9 @@ _start:
 .read_file:
     ; Read the file into the memory
     mov [contents], rax
+%ifdef DEBUG
     WRITE STDOUT, read_index_msg, read_index_msg_len
+%endif
     READ r13, [contents], r12
 
     ; Write the http header and then the index.html to the client
@@ -98,7 +110,9 @@ _start:
     WRITE [client_fd], [contents], r12
 
     ; Free the memory alloced for the file
+%ifdef DEBUG
     WRITE STDOUT, munmap_msg, munmap_msg_len
+%endif
     MUNMAP [contents], r12
     jmp .close
 
@@ -215,4 +229,5 @@ section .bss
     client_fd: resd 1
     stat_struct: resb 144
     buffer: resb BUFF_LEN
+    filename: resb MAX_FILE_LEN
 

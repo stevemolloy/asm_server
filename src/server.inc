@@ -8,4 +8,5 @@
 
 %define BACKLOG 16
 %define BUFF_LEN 2048
+%define MAX_FILE_LEN 256
 
