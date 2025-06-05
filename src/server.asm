@@ -36,7 +36,7 @@ _start:
     jl .exit_fail
     mov [client_fd], rax
 
-    ; Read the request. Close if the request is for the favicon
+    ; Read the request.
     WRITE STDOUT, req_recvd_msg, req_recvd_msg_len
     READ [client_fd], buffer, BUFF_LEN - 1
     WRITE STDOUT, buffer, BUFF_LEN - 1
