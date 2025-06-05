@@ -27,7 +27,10 @@ _start:
     jne .exit_fail
 
 .server_loop:
+    ZERO_MEM filename,  MAX_FILE_LEN   ; Zero the filename buffer
     ZERO_MEM buffer, BUFF_LEN ; Zero the logging buffer
+    mov rax, buffer
+    mov [cursor], rax
 
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
@@ -38,11 +41,11 @@ _start:
 
     ; Read the request.
     WRITE STDOUT, req_recvd_msg, req_recvd_msg_len
-    READ [client_fd], buffer, BUFF_LEN - 1
-    WRITE STDOUT, buffer, BUFF_LEN - 1
+    READ [client_fd], [cursor], BUFF_LEN - 1
+    WRITE STDOUT, [cursor], BUFF_LEN - 1
 
     ; Check if this is a GET req. 404 if not.
-    mov rdi, buffer
+    mov rdi, [cursor]
     mov rsi, get_req
     mov rdx, get_req_len
     call sized_strcmp
@@ -50,7 +53,26 @@ _start:
     jne .send_404
 
     ; Serve index.html if the request is for "/"
-    mov rdi, buffer + get_req_len
+    mov rbx, [cursor]
+    add rbx, get_req_len
+    mov [cursor], rbx
+
+    xor rax, rax            ; rax = character count
+.next_char:
+    cmp byte [rbx + rax], ' '
+    je .copy_filename
+    inc rax
+    jmp .next_char
+
+.copy_filename:
+    mov rsi, rbx
+    lea rdi, [filename]
+    mov rcx, rax
+    rep movsb
+    mov byte [rdi], 0
+
+.checking_file:
+    mov rdi, [cursor]
     mov rsi, root_req
     mov rdx, root_req_len
     call sized_strcmp
@@ -58,7 +80,7 @@ _start:
     je .open_file
 
     ; Serve index.html if the request is for "/index.html"
-    mov rdi, buffer + get_req_len
+    mov rdi, [cursor]
     mov rsi, indexhtml_req
     mov rdx, indexhtml_req_len
     call sized_strcmp
@@ -224,6 +246,7 @@ section .data
     favicon_len equ $ - favicon
 
 section .bss
+    cursor: resq 1
     contents: resq 1
     sock: resd 1
     client_fd: resd 1
