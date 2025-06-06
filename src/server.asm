@@ -16,7 +16,21 @@ _start:
     mov rdi, r9
     call strlen
     mov r10, rax
-    WRITE STDOUT, r9, r10
+
+    xor rax, rax
+.copy_arg1_to_server_base:
+    mov bl, byte [r9 + rax]
+    mov [server_base + rax], bl
+    cmp bl, 0
+    je .done_copying
+    inc rax
+    jmp .copy_arg1_to_server_base
+.done_copying:
+    mov byte [server_base + rax], '/'
+    inc rax
+    mov [server_base_len], rax
+
+    WRITE STDOUT, server_base, [server_base_len]
     WRITE STDOUT, newline, newline_len
 
 .socket_creation:
@@ -47,7 +61,8 @@ _start:
 
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
-    WRITE STDOUT, html_folder, html_folder_len
+    ; WRITE STDOUT, html_folder, html_folder_len
+    WRITE STDOUT, server_base, [server_base_len]
     WRITE STDOUT, accept_msg_end, accept_msg_end_len
     ACCEPT [sock], 0, 0
     cmp rax, 0
@@ -80,16 +95,19 @@ _start:
     jmp .next_char
 
 .copy_filename:
+    mov r15, rax
+
     mov rsi, rbx
     lea rdi, [filename]
-    mov rsi, html_folder
-    mov rcx, html_folder_len
+    mov rsi, server_base
+    mov rcx, [server_base_len]
     rep movsb
 
 .empty_req_is_indexhtml:
-    cmp rax, 0
+    cmp r15, 0
     jne .file_from_request
-    lea rdi, [filename + html_folder_len]
+    mov rax, [server_base_len]
+    lea rdi, [filename + rax]
     mov rsi, index_html_fname
     mov rcx, index_html_fname_len
     rep movsb
@@ -97,8 +115,9 @@ _start:
 
 .file_from_request:
     mov rsi, [cursor]
-    lea rdi, [filename + html_folder_len]
-    mov rcx, rax
+    mov rax, [server_base_len]
+    lea rdi, [filename + rax]
+    mov rcx, r15
     rep movsb
     mov byte [rdi], 0
 
@@ -289,5 +308,6 @@ section .bss
     stat_struct: resb 144
     buffer: resb BUFF_LEN
     server_base: resb MAX_FILE_LEN
+    server_base_len: resq 1
     filename: resb MAX_FILE_LEN
 
