@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen Molloy" />
-  <title>slides_10</title>
+  <title>slides_4</title>
   <style>
     html {
       color: #1a1a1a;
@@ -167,19 +167,25 @@
       vertical-align: middle;
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    .nav-links {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px; /* optional spacing */
+    }
   </style>
 </head>
 <body>
-<h1 id="hello-world">Hello world</h1>
-<p>To print something to screen (i.e., to <code>stdout</code>), we need
-to know two things:</p>
-<ol type="1">
-<li>How to prepare the <code>write</code> syscall.</li>
-<li>How to store data in our ASM file.</li>
-</ol>
 <div class="nav-links">
-  <a href="slides_09.md.html">Prev</a>
-  <a href="slides_11.md.html">Next</a>
+  <a href="slides_03.md.html">Prev</a>
+  <a href="slides_05.md.html">Next</a>
 </div>
+<h1 id="os-specific-functionality">OS-specific functionality</h1>
+<p>The OS provides access to the hardware: in/out streams, network,
+memory, etc.</p>
+<p>This is typically done using <code>syscalls</code> – requests to the
+operating system to provide specific functionality</p>
+<p>For example, printing a string to <code>stdout</code> would be done
+by providing the address of the string in memory as well as its length,
+and then making the appropriate syscall</p>
 </body>
 </html>

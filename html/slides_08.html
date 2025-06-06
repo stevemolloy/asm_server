@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen Molloy" />
-  <title>slides_1</title>
+  <title>slides_8</title>
   <style>
     html {
       color: #1a1a1a;
@@ -167,17 +167,29 @@
       vertical-align: middle;
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    .nav-links {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px; /* optional spacing */
+    }
   </style>
 </head>
 <body>
-    <h1 id="back-to-basics.-x86_64-linux-assembly">Back to basics:<br>x86_64 Linux assembly</h1>
-<p><img src="programming_meme.jpg" /></p>
-<h2 id="stephen-molloy">Stephen Molloy</h2>
-<h2 id="th-june-2025">13th June, 2025</h2>
-<h2 id="maxiv-lund-sweden">MAXIV, Lund, Sweden</h2>
 <div class="nav-links">
-  <a href="slides_01.md.html">Prev</a>
-  <a href="slides_02.md.html">Next</a>
+  <a href="slides_07.md.html">Prev</a>
+  <a href="slides_09.md.html">Next</a>
 </div>
+<h1 id="seg-fault-on-return">Seg fault on return?</h1>
+<p>When a function is called, the CPU needs to know which memory address
+to jump back to.</p>
+<p>This return address is stored on the stack.</p>
+<p>So, the <code>ret</code> function will fetch this from the stack, and
+then jump to it.</p>
+<p>But in this case, the <code>_start</code> function was never
+called!</p>
+<p><code>ret</code> will effectively jump to whatever garbage happens to
+be at the top of the stack –&gt; segmentation fault.</p>
+<p>Instead we need to tell the OS that we are done and that the process
+should be killed</p>
 </body>
 </html>

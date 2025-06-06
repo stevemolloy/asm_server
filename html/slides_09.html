@@ -232,11 +232,20 @@
     code span.va { color: #19177c; } /* Variable */
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .nav-links {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px; /* optional spacing */
+    }
   </style>
 </head>
 <body>
+<div class="nav-links">
+  <a href="slides_08.md.html">Prev</a>
+  <a href="slides_10.md.html">Next</a>
+</div>
 <h1 id="syscalls">Syscalls</h1>
-<p>https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/syscalls/#x86_64-64-bit</p>
+<p><a href="https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/syscalls/#x86_64-64-bit">https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/syscalls/#x86_64-64-bit</a></p>
 <ol type="1">
 <li>Find the number of the syscall you want</li>
 <li>Place this value into the <code>rax</code> register</li>
@@ -250,9 +259,5 @@
 class="sourceCode asm"><code class="sourceCode fasm"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">mov</span> <span class="kw">rax</span><span class="op">,</span> <span class="dv">60</span>   <span class="co">; the exit syscall has a value of 60</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">mov</span> <span class="kw">rdi</span><span class="op">,</span> <span class="dv">0</span>    <span class="co">; the value to return</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">syscall</span>       <span class="co">; Go!</span></span></code></pre></div>
-<div class="nav-links">
-  <a href="slides_08.md.html">Prev</a>
-  <a href="slides_10.md.html">Next</a>
-</div>
 </body>
 </html>
