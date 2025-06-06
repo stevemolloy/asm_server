@@ -1,7 +1,7 @@
 %include "src/linux.inc"
 %include "src/server.inc"
 
-; %define DEBUG
+%define DEBUG
 
 global _start
 
@@ -34,6 +34,8 @@ _start:
 
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
+    WRITE STDOUT, html_folder, html_folder_len
+    WRITE STDOUT, accept_msg_end, accept_msg_end_len
     ACCEPT [sock], 0, 0
     cmp rax, 0
     jl .exit_fail
@@ -71,6 +73,16 @@ _start:
     mov rcx, html_folder_len
     rep movsb
 
+.empty_req_is_indexhtml:
+    cmp rax, 0
+    jne .file_from_request
+    lea rdi, [filename + html_folder_len]
+    mov rsi, index_html_fname
+    mov rcx, index_html_fname_len
+    rep movsb
+    jmp .open_file
+
+.file_from_request:
     mov rsi, [cursor]
     lea rdi, [filename + html_folder_len]
     mov rcx, rax
@@ -81,8 +93,9 @@ _start:
     ; Open the local index.html
 %ifdef DEBUG
     WRITE STDOUT, open_index_msg, open_index_msg_len
+    WRITE STDOUT, filename, MAX_FILE_LEN
+    WRITE STDOUT, newline, newline_len
 %endif
-    ; OPEN index_html_fname, O_RDONLY, 0
     OPEN filename, O_RDONLY, 0
     cmp rax, 0
     jg .fstat_file
@@ -172,7 +185,8 @@ section .data
     header404 db "HTTP/1.1 404 Not Found", 13, 10
     header404_len equ $ - header404
 
-    index_html_fname db "src/index.html", 0
+    index_html_fname db "index.html", 0
+    index_html_fname_len equ $ - index_html_fname - 1
 
     socket_msg db "INFO: Creating socket...", 10
     socket_msg_len equ $ - socket_msg
@@ -183,13 +197,15 @@ section .data
     listen_msg db "INFO: Started listening...", 10
     listen_msg_len equ $ - listen_msg
 
-    accept_msg db "INFO: Awaiting connections...", 10
+    accept_msg db "INFO: Awaiting connections (serving from folder: "
     accept_msg_len equ $ - accept_msg
+    accept_msg_end db ")...", 10
+    accept_msg_end_len equ $ - accept_msg_end
 
     req_recvd_msg db "INFO: Received the following request:", 10, 10
     req_recvd_msg_len equ $ - req_recvd_msg
 
-    open_index_msg db "INFO: Opening index.html...", 10
+    open_index_msg db "INFO: Opening file: "
     open_index_msg_len equ $ - open_index_msg
 
     fstat_msg db "INFO: Fstating index.html...", 10
@@ -216,6 +232,9 @@ section .data
     err_msg db "ERROR", 10
     err_msg_len equ $ - err_msg
 
+    newline db 10
+    newline_len equ $ - newline
+
     addr.sin_family dw AF_INET
     addr.sin_port dw 36895    ; htons(8080)
     addr.sin_addr dd 0
@@ -228,14 +247,14 @@ section .data
     root_req db " "
     root_req_len equ $ - root_req
 
+    html_folder db "html/", 0
+    html_folder_len equ $ - html_folder - 1
+
     indexhtml_req db "index.html"
     indexhtml_req_len equ $ - indexhtml_req
 
     favicon db "/favicon.ico"
     favicon_len equ $ - favicon
-
-    html_folder db "html/", 0
-    html_folder_len equ $ - html_folder - 1
 
 section .bss
     cursor: resq 1
