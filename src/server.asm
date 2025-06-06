@@ -7,15 +7,15 @@ global _start
 
 section .text
 _start:
-    pop r9
-    cmp r9, 2
-    jne .socket_creation
+    pop r9      ; argc
+    cmp r9, 2   ; Only one clarg allowed
+    je .parse_clargs
+    WRITE STDERR, wrong_args_msg, wrong_args_msg_len
+    jmp .exit_fail
     
-    pop r9
-    pop r9
-    mov rdi, r9
-    call strlen
-    mov r10, rax
+.parse_clargs:
+    pop r9   ; executable name.  Discard (?)
+    pop r9   ; the folder to server
 
     xor rax, rax
 .copy_arg1_to_server_base:
@@ -26,12 +26,9 @@ _start:
     inc rax
     jmp .copy_arg1_to_server_base
 .done_copying:
-    mov byte [server_base + rax], '/'
+    mov byte [server_base + rax], '/'  ; End with file separator
     inc rax
     mov [server_base_len], rax
-
-    WRITE STDOUT, server_base, [server_base_len]
-    WRITE STDOUT, newline, newline_len
 
 .socket_creation:
     ; Create the socket
@@ -61,7 +58,6 @@ _start:
 
     ; Accept incoming connections
     WRITE STDOUT, accept_msg, accept_msg_len
-    ; WRITE STDOUT, html_folder, html_folder_len
     WRITE STDOUT, server_base, [server_base_len]
     WRITE STDOUT, accept_msg_end, accept_msg_end_len
     ACCEPT [sock], 0, 0
@@ -82,7 +78,7 @@ _start:
     cmp rax, 0
     jne .send_404
 
-    ; Serve index.html if the request is for "/"
+    ; Advance the cursor
     mov rbx, [cursor]
     add rbx, get_req_len
     mov [cursor], rbx
@@ -95,7 +91,7 @@ _start:
     jmp .next_char
 
 .copy_filename:
-    mov r15, rax
+    mov r15, rax   ; Move the char count into r15 for safe-keeping
 
     mov rsi, rbx
     lea rdi, [filename]
@@ -222,8 +218,12 @@ sized_strcmp:
     ret
 
 section .data
+    wrong_args_msg db "ERROR: Wrong number of args provided", 10
+                   db "Usage: asm_server <folder_to_serve>", 10
+    wrong_args_msg_len equ $ - wrong_args_msg
+
     header200 db "HTTP/1.1 200 OK", 13, 10
-           db "Content-Type: text/html", 13, 10, 13, 10
+              db "Content-Type: text/html", 13, 10, 13, 10
     header200_len equ $ - header200
 
     header404 db "HTTP/1.1 404 Not Found", 13, 10
