@@ -1,5 +1,5 @@
-%include "src/linux.inc"
-%include "src/server.inc"
+%include "src/lib_linux.inc"
+%include "src/lib_server.inc"
 
 %define DEBUG
 
@@ -7,6 +7,19 @@ global _start
 
 section .text
 _start:
+    pop r9
+    cmp r9, 2
+    jne .socket_creation
+    
+    pop r9
+    pop r9
+    mov rdi, r9
+    call strlen
+    mov r10, rax
+    WRITE STDOUT, r9, r10
+    WRITE STDOUT, newline, newline_len
+
+.socket_creation:
     ; Create the socket
     WRITE STDOUT, socket_msg, socket_msg_len
     SOCKET AF_INET, SOCK_STREAM, 0
@@ -156,6 +169,18 @@ _start:
     WRITE STDERR, err_msg, err_msg_len
     EXIT EXIT_FAILURE
 
+strlen:
+    xor rax, rax
+
+.loop:
+    cmp byte [rdi], 0
+    je .done
+    inc rax
+    inc rdi
+    jmp .loop
+.done:
+    ret
+
 sized_strcmp:
     ; rdi: String 1
     ; rsi: String 2
@@ -263,5 +288,6 @@ section .bss
     client_fd: resd 1
     stat_struct: resb 144
     buffer: resb BUFF_LEN
+    server_base: resb MAX_FILE_LEN
     filename: resb MAX_FILE_LEN
 
