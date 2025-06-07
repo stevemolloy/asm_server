@@ -1,7 +1,7 @@
 %include "src/lib_linux.inc"
 %include "src/lib_server.inc"
 
-%define DEBUG
+; %define DEBUG
 
 global _start
 
