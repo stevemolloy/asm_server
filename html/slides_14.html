@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen Molloy" />
-  <title>slides_11</title>
+  <title>slides_14</title>
   <style>
     html {
       color: #1a1a1a;
@@ -241,50 +241,36 @@
 </head>
 <body>
 <div class="nav-links">
-  <a href="slides_10.html">Prev</a>
-  <a href="slides_12.html">Next</a>
+  <a href="slides_13.html">Prev</a>
+  <a href="slides_15.html">Next</a>
 </div>
-<h1 id="command-line-arguments">Command line arguments</h1>
-<p>Data is passed to the executable via the <code>stack</code></p>
-<p>This is a region of memory that the OS provides to all executables.
-It is indicated by the <code>rsp</code> register, and it grows
-downwards</p>
-<table>
-<thead>
-<tr class="header">
-<th>Stack</th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Etc.</td>
-<td>rsp + …</td>
-</tr>
-<tr class="even">
-<td>Address of second argument</td>
-<td>rsp + 8</td>
-</tr>
-<tr class="odd">
-<td>Address of first argument</td>
-<td>rsp + 4</td>
-</tr>
-<tr class="even">
-<td>Number of arguments</td>
-<td>rsp</td>
-</tr>
-</tbody>
-</table>
-<p>The stack is manipulated by <code>pop</code>ping data off it, and
-<code>push</code>ing data to it.</p>
+<h1 id="not-covered">Not covered</h1>
+<ul>
+<li>Floating point
+<ul>
+<li>Dedicated registers</li>
+<li>Hardware based parallelisation (SIMD)</li>
+</ul></li>
+<li>Advanced instructions: For example:
+<ul>
+<li><code>stosb</code>: stores the value of <code>rax</code> to the
+location pointed to by <code>rdi</code> and increments
+<code>rdi</code></li>
+<li><code>rep</code>: rep repeats a command while <code>rcx</code>!=0,
+decrementing <code>rcx</code> each time</li>
+</ul></li>
+<li>A whole bunch of other stuff
+<ul>
+<li>Remember, I am nothing more than an enthusiastic idiot</li>
+</ul></li>
+</ul>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode asm"><code class="sourceCode fasm"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">pop</span> <span class="kw">rdi</span>   <span class="co">; Pops the top value from the stack,</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>          <span class="co">; increases rsp by 4, and puts it into rdi</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">push</span> <span class="kw">r10</span>  <span class="co">; Pushes the value held in r10 onto the stack</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>          <span class="co">; and decreases rsp by 4</span></span></code></pre></div>
-<p>So the OS pushes the arguments onto the stack in reverse order, and
-then pushes the number of arguments.</p>
-<p>Note that the calling command (<code>./hello</code>) is the zeroth
-argument.</p>
+class="sourceCode asm"><code class="sourceCode fasm"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>%<span class="pp">macro</span> ZERO_MEM <span class="dv">2</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">mov</span> <span class="kw">rdi</span><span class="op">,</span> <span class="op">%</span><span class="dv">1</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">mov</span> <span class="kw">rcx</span><span class="op">,</span> <span class="op">%</span><span class="dv">2</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">xor</span> <span class="kw">rax</span><span class="op">,</span> <span class="kw">rax</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">rep</span> <span class="bu">stosb</span>    <span class="co">; stosb stores the value of RAX to the location pointed to by RDI and increments RDI</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                 <span class="co">; rep repeats this while RCX!=0, decrementing RCX each time</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>%endmacro</span></code></pre></div>
 </body>
 </html>

@@ -241,8 +241,8 @@
 </head>
 <body>
 <div class="nav-links">
-  <a href="slides_08.md.html">Prev</a>
-  <a href="slides_10.md.html">Next</a>
+  <a href="slides_08.html">Prev</a>
+  <a href="slides_10.html">Next</a>
 </div>
 <h1 id="syscalls">Syscalls</h1>
 <p><a href="https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/syscalls/#x86_64-64-bit">https://www.chromium.org/chromium-os/developer-library/reference/linux-constants/syscalls/#x86_64-64-bit</a></p>
@@ -254,7 +254,7 @@
 <li>Issue the <code>syscall</code> instruction</li>
 </ol>
 <h2 id="for-example">For example</h2>
-<p>Exiting a function is done by a syscall</p>
+<p>Exiting an OS process is done by a syscall</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode asm"><code class="sourceCode fasm"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">mov</span> <span class="kw">rax</span><span class="op">,</span> <span class="dv">60</span>   <span class="co">; the exit syscall has a value of 60</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">mov</span> <span class="kw">rdi</span><span class="op">,</span> <span class="dv">0</span>    <span class="co">; the value to return</span></span>

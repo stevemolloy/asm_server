@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen Molloy" />
-  <title>slides_7</title>
+  <title>slides_13</title>
   <style>
     html {
       color: #1a1a1a;
@@ -176,12 +176,29 @@
 </head>
 <body>
 <div class="nav-links">
-  <a href="slides_06.html">Prev</a>
-  <a href="slides_08.html">Next</a>
+  <a href="slides_12.html">Prev</a>
+  <a href="slides_14.html">Next</a>
 </div>
-<h1 id="what-is-before-hello-world">What is before
-<code>Hello world</code>?</h1>
-<p>Can we write a function that does nothing?</p>
-<p>A function that immediately returns to the prompt?</p>
+<h1 id="function-args">Function args</h1>
+<p>We saw an example of calling a function when we organised the
+syscalls</p>
+<ul>
+<li>Arg 0 in rax</li>
+<li>Arg 1 in rdi</li>
+<li>Arg 2 in rsi</li>
+<li>Etc.</li>
+</ul>
+<p>But this is just a convention. x86_64 doesn’t specify that you must
+do this</p>
+<p>In reality, function args are not really a concept at this level. A
+function is a fancy <code>jmp</code>.</p>
+<p>We are free to make our own convention.</p>
+<ul>
+<li>Pass via the stack (as Linux does when the executable was
+called)</li>
+<li>Pass via registers (as Linux does with syscalls)</li>
+<li>Something fancier</li>
+</ul>
+<p>Here I will copy the syscall way of working</p>
 </body>
 </html>
