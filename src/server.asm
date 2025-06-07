@@ -38,6 +38,14 @@ _start:
     jl .exit_fail
     mov [sock], rax
 
+    ; Set SO_REUSEADDR
+%ifdef DEBUG
+    WRITE STDOUT, setsockopts_msg, setsockopts_msg_len
+%endif
+    SETSOCKOPT [sock], SOL_SOCKET, SO_REUSEADDR, so_reuseadd_val, 4
+    cmp rax, 0
+    jl .exit_fail
+
     ; Bind it to port 8080
     WRITE STDOUT, bind_msg, bind_msg_len
     BIND [sock], addr.sin_family, addr_len
@@ -235,6 +243,9 @@ section .data
     socket_msg db "INFO: Creating socket...", 10
     socket_msg_len equ $ - socket_msg
 
+    setsockopts_msg db "INFO: Setting sockopts SO_REUSEADDR = 1...", 10
+    setsockopts_msg_len equ $ - setsockopts_msg
+
     bind_msg db "INFO: Binding to port...", 10
     bind_msg_len equ $ - bind_msg
 
@@ -299,6 +310,8 @@ section .data
 
     favicon db "/favicon.ico"
     favicon_len equ $ - favicon
+
+    so_reuseadd_val dd SOL_SOCKET
 
 section .bss
     cursor: resq 1

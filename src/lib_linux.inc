@@ -9,6 +9,7 @@
 %define SYS_ACCEPT 43
 %define SYS_BIND 49
 %define SYS_LISTEN 50
+%define SYS_SETSOCKOPT 54
 %define SYS_EXIT 60
 
 %define STDIN  0
@@ -21,6 +22,8 @@
 %define AF_INET 2
 %define SOCK_STREAM 1
 %define IPPROTO_IP 0
+%define SO_REUSEADDR 2
+%define SOL_SOCKET 1
 
 %define O_RDONLY 0
 %define ST_SIZE_OFFS 48
@@ -127,5 +130,9 @@
 
 %macro MUNMAP 2
     SYSCALL2 SYS_MUNMAP, %1, %2
+%endmacro
+
+%macro SETSOCKOPT 5
+    SYSCALL5 SYS_SETSOCKOPT, %1, %2, %3, %4, %5
 %endmacro
 
