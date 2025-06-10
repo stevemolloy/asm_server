@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen Molloy" />
-  <title>slides_11</title>
+  <title>slides_loops</title>
   <style>
     html {
       color: #1a1a1a;
@@ -241,50 +241,18 @@
 </head>
 <body>
 <div class="nav-links">
-  <a href="slides_loops.html">Prev</a>
-  <a href="slides_12.html">Next</a>
+  <a href="slides_loops0.html">Prev</a>
+  <a href="slides_loops2.html">Next</a>
 </div>
-<h1 id="command-line-arguments">Command line arguments</h1>
-<p>Data is passed to the executable via the <code>stack</code></p>
-<p>This is a region of memory that the OS provides to all executables.
-It is indicated by the <code>rsp</code> register, and it grows
-downwards</p>
-<table>
-<thead>
-<tr class="header">
-<th>Stack</th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Etc.</td>
-<td>rsp + …</td>
-</tr>
-<tr class="even">
-<td>Address of second argument</td>
-<td>rsp + 8</td>
-</tr>
-<tr class="odd">
-<td>Address of first argument</td>
-<td>rsp + 4</td>
-</tr>
-<tr class="even">
-<td>Number of arguments</td>
-<td>rsp</td>
-</tr>
-</tbody>
-</table>
-<p>The stack is manipulated by <code>pop</code>ping data off it, and
-<code>push</code>ing data to it.</p>
-<div class="sourceCode" id="cb1"><pre
-class="sourceCode asm"><code class="sourceCode fasm"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">pop</span> <span class="kw">rdi</span>   <span class="co">; Pops the top value from the stack,</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>          <span class="co">; increases rsp by 4, and puts it into rdi</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">push</span> <span class="kw">r10</span>  <span class="co">; Pushes the value held in r10 onto the stack</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>          <span class="co">; and decreases rsp by 4</span></span></code></pre></div>
-<p>So the OS pushes the arguments onto the stack in reverse order, and
-then pushes the number of arguments.</p>
-<p>Note that the calling command (<code>./hello</code>) is the zeroth
-argument.</p>
+<h1 id="loops">Loops</h1>
+<p>ASM has no constructs for while loops or for loops.</p>
+<p>Instead it has a collection of commands to jump to different
+locations in the code. Conditionally or unconditionally.</p>
+<h1 id="loops">In C</h1>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="op">(</span>i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    fputs<span class="op">(</span>hello_msg<span class="op">,</span> stdout<span class="op">);</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    i<span class="op">++;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </body>
 </html>
